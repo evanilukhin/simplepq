@@ -1,0 +1,2 @@
+# simplepq
+Simple, persisted queue
