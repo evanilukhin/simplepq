@@ -66,15 +66,15 @@ defmodule Simplepq do
   end
 
   @doc """
-  Rejects first elemet from the the queue. This method don't return elemnt and don't have
+  Rejects first elemet from the the queue. This method don't return element and don't have
   special return for the case when queue is empty. It's just return
   this queue.
 
   Returns `{:ok, queue}` if element successfully rejected or queue is empty.
   Else {:error, reason} when caused problem on writing the file
   """
-  @spec reject(Simplepq.Queue) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
-  def reject(%Queue{equeue: equeue} = queue) do
+  @spec ack(Simplepq.Queue) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
+  def ack(%Queue{equeue: equeue} = queue) do
     {result , equeue} = :queue.out(equeue)
     case result do
       {:value, _} -> update_queue(queue, equeue)
@@ -83,7 +83,22 @@ defmodule Simplepq do
   end
 
   @doc """
-  Return count elemens in the queue.
+  Take first element from the queue and place it in to the end of the queue.
+
+  Returns `{:ok, queue}` if element successfully moved or queue is empty.
+  Else {:error, reason} when caused problem on writing the file
+  """
+  @spec reject(Simplepq.Queue) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
+  def reject(%Queue{equeue: equeue} = queue) do
+    {result , equeue} = :queue.out(equeue)
+    case result do
+      {:value, value} -> update_queue(queue, :queue.in(value, equeue))
+      _ -> {:ok, queue}
+    end
+  end
+
+  @doc """
+  Return count elements in the queue.
   """
   @spec length(Simplepq.Queue) :: number
   def length(%Queue{equeue: equeue}) do

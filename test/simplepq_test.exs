@@ -70,8 +70,41 @@ defmodule SimplepqTest do
     end
   end
 
+  describe "Simplepq.ack/1" do
+    test "delete nothing from the empty queue"do
+      file_path = "tmp/empty.queue"
+      File.rm(file_path)
+
+      {:ok, queue} = Simplepq.create(file_path)
+
+      try do
+        assert {:ok, %Simplepq.Queue{file_path: ^file_path, equeue: {[], []}}} =
+          Simplepq.ack(queue)
+      after
+        File.rm(file_path)
+      end
+    end
+
+    test "delete first element from the not empty queue" do
+      file_path = "tmp/not_empty.queue"
+      File.rm(file_path)
+
+      {:ok, queue} = Simplepq.create(file_path)
+      {:ok, queue} = Simplepq.add(queue, 1)
+      {:ok, queue} = Simplepq.add(queue, 2)
+
+      try do
+        assert {:ok, %Simplepq.Queue{equeue: {[], [2]}, file_path: ^file_path}} =
+          Simplepq.ack(queue)
+        assert {[], [2]} = file_path |> File.read! |> :erlang.binary_to_term()
+      after
+        File.rm(file_path)
+      end
+    end
+  end
+
   describe "Simplepq.reject/1" do
-    test "reject from the empty queue"do
+    test "do it nothing"do
       file_path = "tmp/empty.queue"
       File.rm(file_path)
 
@@ -85,18 +118,19 @@ defmodule SimplepqTest do
       end
     end
 
-    test "reject from the non empty queue" do
+    test "take first element from the not empty queue and place it at the end" do
       file_path = "tmp/not_empty.queue"
       File.rm(file_path)
 
       {:ok, queue} = Simplepq.create(file_path)
       {:ok, queue} = Simplepq.add(queue, 1)
       {:ok, queue} = Simplepq.add(queue, 2)
+      {:ok, queue} = Simplepq.add(queue, 3)
 
       try do
-        assert {:ok, %Simplepq.Queue{equeue: {[], [2]}, file_path: ^file_path}} =
+        assert {:ok, %Simplepq.Queue{equeue: {[1, 3], [2]}, file_path: ^file_path}} =
           Simplepq.reject(queue)
-        assert {[], [2]} = file_path |> File.read! |> :erlang.binary_to_term()
+        assert {[1, 3], [2]} = file_path |> File.read! |> :erlang.binary_to_term()
       after
         File.rm(file_path)
       end
