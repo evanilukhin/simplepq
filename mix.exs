@@ -16,7 +16,7 @@ defmodule Simplepq.MixProject do
       name: "Simplepq",
       source_url: "https://github.com/evanilukhin/simplepq",
       docs: [
-        main: "Simplepq",
+        main: "readme",
         extras: ["README.md"]
       ]
     ]
