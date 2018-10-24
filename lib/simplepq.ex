@@ -2,26 +2,14 @@ defmodule Simplepq do
   alias Simplepq.Queue
   @moduledoc """
   Simple queue that's stored on the disc.
-  ## Usage:
-  ```elixir
-    {:ok, new_queue} = Simplepq.create("new.queue")
-    {:ok, old_queue} = Simplepq.open("old.queue")
-    {:ok, old_message} = Simplepq.get(old_queue)
-    {:ok, new_queue} = Simplepq.add(new_queue, old_message)
-    {:ok, old_queue} = Simplepq.reject(old_queue)
-  ```
+
+  Warning! At this moment all functions don't handle case when the file don't exist. Errors can be raised.
   """
 
   @doc """
-  Creates file on the filesystem if  and create Simplepq.Queue associated with this file.
+  Creates file on the filesystem and create Simplepq.Queue associated with this file.
 
-  Returns `{:ok, Simplepq.Queue}` if all right.
-
-  ## Examples
-
-      iex> Simplepq.create("/home/queue.simplepq")
-      :ok
-
+  Returns `{:ok, queue}` in case of success, else {:error, :file.posix()}.
   """
   @spec create(String.t) :: {:ok, queue::Simplepq.Queue}  | {:error, :file.posix()}
   def create(file_path) when is_bitstring(file_path) do
@@ -30,14 +18,10 @@ defmodule Simplepq do
   end
 
   @doc """
-  Opens queue from file `filename`.
+  Opens queue from file `file_path`.
 
-  Returns `{:ok, Simplepq.Queue}` if all right.
-
-  ## Examples
-
-      iex> Simplepq.open("file.queue")
-      {:ok, %Simplepq.Queue{file: "/dir/with/queues/file.queue"}}
+  Returns `{:ok, queue}` in case of success, or `{:error, :bad_file}` when file
+  can not be converted to term or term is not .
 
   """
   def open(file_path) do
@@ -59,13 +43,7 @@ defmodule Simplepq do
   @doc """
   Adds elemet to the end of queue.
 
-  Returns `{:ok, queue}` if element added.
-
-  ## Examples
-
-      iex> Simplepq.add(queue, "message")
-      {:ok, queue}
-
+  Returns `{:ok, queue}` if element added, else {:error, :file.posix()}.
   """
   @spec add(Simplepq.Queue, String.t) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
   def add(%Simplepq.Queue{equeue: equeue} = queue, message) do
@@ -76,13 +54,7 @@ defmodule Simplepq do
   @doc """
   Reads first element from queue without removing.
 
-  Returns `{:ok, message}` if element exists.
-
-  ## Examples
-
-      iex> Simplepq.get(queue)
-      {:ok, "first queue message"}
-
+  Returns `{:ok, message}` if element exists, or `{:error, :empty} when queue is empty`.
   """
   @spec get(Simplepq.Queue) :: {:ok, message::String.t} | {:error, :empty}
   def get(%Queue{equeue: equeue}) do
@@ -98,14 +70,8 @@ defmodule Simplepq do
   special return for the case when queue is empty. It's just return
   this queue.
 
-  Returns `{:ok, queue}` if element successfully rejected.
-  Else {:error, reason} when caused problem when writing the file
-
-  ## Examples
-
-      iex> Simplepq.reject(queue)
-      {:ok, queue}
-
+  Returns `{:ok, queue}` if element successfully rejected or queue is empty.
+  Else {:error, reason} when caused problem on writing the file
   """
   @spec reject(Simplepq.Queue) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
   def reject(%Queue{equeue: equeue} = queue) do
@@ -118,18 +84,13 @@ defmodule Simplepq do
 
   @doc """
   Return count elemens in the queue.
-
-  ## Examples
-
-      iex> Simplepq.length(queue)
-      9
-
   """
   @spec length(Simplepq.Queue) :: number
   def length(%Queue{equeue: equeue}) do
     :queue.len(equeue)
   end
 
+  @spec update_queue(Simplepq.Queue, tuple) :: {:ok, queue::Simplepq.Queue} | {:error, :file.posix()}
   defp update_queue(%Queue{file_path: file_path} = queue, equeue) do
     case File.write(file_path, :erlang.term_to_binary(equeue)) do
       :ok -> {:ok, %{queue | equeue: equeue}}
