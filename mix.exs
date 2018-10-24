@@ -6,6 +6,8 @@ defmodule Simplepq.MixProject do
       app: :simplepq,
       version: "0.1.0",
       elixir: "~> 1.7",
+      description: "Simple persisted queue",
+      package: package(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
@@ -33,6 +35,13 @@ defmodule Simplepq.MixProject do
       {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.10", only: :test},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+    ]
+  end
+
+  defp package() do
+    [
+      licenses: ["MIT License"],
+      links: %{"GitHub" => "https://github.com/evanilukhin/simplepq"}
     ]
   end
 end
