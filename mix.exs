@@ -4,9 +4,9 @@ defmodule Simplepq.MixProject do
   def project do
     [
       app: :simplepq,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.7",
-      description: "Simple persisted queue",
+      description: "Simple, persistent queue",
       package: package(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),

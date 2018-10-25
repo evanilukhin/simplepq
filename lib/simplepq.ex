@@ -1,7 +1,7 @@
 defmodule Simplepq do
   alias Simplepq.Queue
   @moduledoc """
-  Simple queue that's stored on the disc.
+  Simple queue that's store on the disc.
 
   Warning! At this moment all functions don't handle case when the file don't exist. Errors can be raised.
   """

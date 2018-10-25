@@ -1,8 +1,8 @@
 # Simplepq
-Simple, persisted queue
+Simple, persistent queue
 
 There is a simple library that gives you a possibility to create the queues and
-to interact with them. Queues are stored as not encrypted files on the filesystem. It is slow but really persisted
+to interact with them. Queues are stored as not encrypted files on the filesystem. It is slow but really robust.
 because it's rewrite the associated file after an every change.
 
 [Documentation for Simplepq is available online](http://hexdocs.pm/simplepq/readme.html).
